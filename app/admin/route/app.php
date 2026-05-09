@@ -1,0 +1,85 @@
+<?php
+use think\facade\Route;
+
+// ============ 无需鉴权 ============
+Route::post('auth/login', 'Auth/login');
+
+// ============ 需要管理员鉴权 ============
+Route::group('', function () {
+    // 管理员信息
+    Route::get('auth/profile', 'Auth/profile');
+
+    // 控制台
+    Route::get('dashboard', 'Dashboard/index');
+
+    // 管理员管理
+    Route::resource('admins', 'AdminController');
+
+    // 角色管理（特定路由在前）
+    Route::put('roles/:id/permissions', 'RoleController/assignPermissions');
+    Route::resource('roles', 'RoleController');
+
+    // 权限管理
+    Route::resource('permissions', 'PermissionController');
+
+    // 栏目管理
+    Route::resource('categories', 'CategoryController');
+
+    // 文章管理
+    Route::resource('articles', 'ArticleController');
+
+    // 标签管理
+    Route::resource('tags', 'TagController');
+
+    // 教程管理
+    Route::resource('tutorials', 'TutorialController');
+
+    // 章节管理
+    Route::put('chapters/sort', 'ChapterController/sort');
+    Route::resource('chapters', 'ChapterController');
+
+    // 评论管理
+    Route::put('comments/:id/audit', 'CommentController/audit');
+    Route::get('comments', 'CommentController/index');
+    Route::delete('comments/:id', 'CommentController/delete');
+
+    // 用户管理
+    Route::put('users/:id/status', 'UserController/status');
+    Route::get('users', 'UserController/index');
+    Route::get('users/:id', 'UserController/read');
+
+    // 文件管理
+    Route::get('upload', 'UploadController/index');
+    Route::post('upload', 'UploadController/upload');
+    Route::delete('upload/:id', 'UploadController/delete');
+
+    // 系统配置
+    Route::get('config', 'ConfigController/index');
+    Route::put('config', 'ConfigController/update');
+    Route::post('config', 'ConfigController/save');
+    Route::delete('config/:id', 'ConfigController/delete');
+
+    // 配置分组管理
+    Route::put('configGroups/sort', 'ConfigController/groupSort');
+    Route::get('configGroups/:id', 'ConfigController/groupRead');
+    Route::get('configGroups', 'ConfigController/groupIndex');
+    Route::post('configGroups', 'ConfigController/groupSave');
+    Route::put('configGroups/:id', 'ConfigController/groupUpdate');
+    Route::delete('configGroups/:id', 'ConfigController/groupDelete');
+
+    // 消息管理
+    Route::get('messages/unread-count', 'MessageController/unreadCount');
+    Route::put('messages/read-all', 'MessageController/markAllRead');
+    Route::put('messages/:id/read', 'MessageController/markRead');
+    Route::get('messages', 'MessageController/index');
+    Route::delete('messages/:id', 'MessageController/delete');
+
+    // 重定向管理
+    Route::resource('redirects', 'RedirectController');
+
+    // 爬虫记录
+    Route::get('crawlers/stats', 'CrawlerController/stats');
+    Route::get('crawlers/bot-types', 'CrawlerController/botTypes');
+    Route::delete('crawlers/cleanup', 'CrawlerController/cleanup');
+    Route::get('crawlers', 'CrawlerController/index');
+})->middleware(\app\admin\middleware\AdminAuth::class);

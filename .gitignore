@@ -1,0 +1,45 @@
+# === 环境配置 ===
+.env
+.example.env
+
+# === 运行时 ===
+runtime/
+!runtime/.gitignore
+
+# === 依赖 ===
+vendor/
+node_modules/
+
+# === ThinkPHP ===
+think/think
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === 开发说明 & 临时文件 ===
+个人博客 CMS 系统协同开发说明文档.md
+环境说明.txt
+API_DOCUMENTATION.md
+diag*.php
+ftp_*.ps1
+*.ps1
+migrate*.php
+test_api.php
+
+# === 前端环境配置 ===
+font/blog-web/.env.development
+font/blog-web/.env.production
+
+# === 日志 ===
+*.log
+
+# === Composer ===
+composer.lock

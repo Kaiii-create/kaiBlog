@@ -1,0 +1,191 @@
+// ==========================================
+// blog-admin 2026 现代风格主题
+// ==========================================
+
+// --- 亮色主题 ---
+:root {
+  --color-primary: #4f6ef7;
+  --color-primary-light: #6b8aff;
+  --color-primary-dark: #3b56d9;
+  --color-primary-bg: rgba(79, 110, 247, 0.08);
+  --color-secondary: #06b6d4;
+  --color-accent: #f59e0b;
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #06b6d4;
+
+  // 侧边栏（亮色 = 白色）
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #64748b;
+  --sidebar-text-active: #1e293b;
+  --sidebar-hover: rgba(79, 110, 247, 0.06);
+  --sidebar-active: rgba(79, 110, 247, 0.1);
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+
+  // 主体
+  --color-bg: #f0f2f5;
+  --color-bg-card: #ffffff;
+  --color-bg-header: rgba(255, 255, 255, 0.95);
+
+  // 文字
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  // 边框 & 阴影
+  --color-border: #e8eaed;
+  --color-border-light: #f0f1f3;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-dropdown: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-header: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-sidebar: 0 4px 24px rgba(0,0,0,0.08);
+
+  // 尺寸
+  --admin-sidebar-width: 240px;
+  --admin-sidebar-collapsed: 64px;
+  --admin-header-height: 48px;
+  --admin-content-padding: 20px;
+  --admin-tabs-height: 38px;
+
+  // 初始值（跟随侧栏状态）
+  --sidebar-actual-width: var(--admin-sidebar-width);
+}
+
+// --- 暗色主题 ---
+html.dark {
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #64748b;
+  --sidebar-text-active: #e2e8f0;
+  --sidebar-hover: rgba(255,255,255,0.05);
+  --sidebar-active: rgba(79,110,247,0.15);
+  --sidebar-border: rgba(255,255,255,0.05);
+
+  --color-bg: #0a0a14;
+  --color-bg-card: rgba(255,255,255,0.03);
+  --color-bg-header: rgba(10,10,20,0.9);
+
+  --color-text: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-border: rgba(79,110,247,0.12);
+  --color-border-light: rgba(255,255,255,0.04);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-dropdown: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-header: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-sidebar: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  transition: background 0.25s, color 0.25s;
+}
+
+a { color: var(--color-primary); text-decoration: none; &:hover { opacity: 0.85; } }
+
+// ---- 通用卡片 ----
+.admin-card {
+  background: var(--color-bg-card);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+}
+
+// ---- 渐变统计卡片 ----
+.stat-card-gradient {
+  position: relative;
+  border-radius: 12px;
+  padding: 20px;
+  color: #fff;
+  overflow: hidden;
+  &::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--card-color1), var(--card-color2));
+  }
+  .stat-icon, .stat-value, .stat-label, .stat-trend { position: relative; z-index: 1; }
+  .stat-icon {
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.2); border-radius: 10px; font-size: 20px; margin-bottom: 14px;
+  }
+  .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 2px; letter-spacing: -0.5px; }
+  .stat-label { font-size: 13px; opacity: 0.85; }
+  .stat-trend { margin-top: 8px; font-size: 12px; opacity: 0.75; }
+}
+
+// ---- 表格 ----
+.el-table {
+  --el-table-bg-color: transparent !important;
+  --el-table-tr-bg-color: transparent !important;
+  --el-table-header-bg-color: #f8f9fb !important;
+  --el-table-border-color: var(--color-border-light) !important;
+  --el-table-text-color: var(--color-text) !important;
+  --el-table-header-text-color: var(--color-text-secondary) !important;
+  --el-table-row-hover-bg-color: rgba(79,110,247,0.03) !important;
+  th.el-table__cell { font-weight: 600; font-size: 13px; background: #f8f9fb !important; }
+  td.el-table__cell { font-size: 13px; }
+}
+html.dark .el-table {
+  --el-table-header-bg-color: rgba(255,255,255,0.03) !important;
+  th.el-table__cell { background: rgba(255,255,255,0.03) !important; }
+}
+
+// ---- 弹窗 ----
+.el-dialog {
+  --el-dialog-bg-color: var(--color-bg-card) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-dropdown) !important;
+  .el-dialog__header { padding: 20px 24px 0; }
+  .el-dialog__body { padding: 20px 24px; }
+  .el-dialog__footer { padding: 0 24px 20px; }
+}
+
+// ---- 表单 ----
+.el-form-item__label { color: var(--color-text-secondary) !important; font-weight: 500; }
+.el-input__wrapper { box-shadow: 0 0 0 1px var(--color-border) inset !important; border-radius: 8px !important; &:hover { box-shadow: 0 0 0 1px var(--color-border-hover) inset !important; } &.is-focus { box-shadow: 0 0 0 1px var(--color-primary) inset !important; } }
+
+// ---- 分页 ----
+.el-pagination { --el-pagination-text-color: var(--color-text) !important; }
+
+// ---- Tag ----
+.el-tag { border: none !important; border-radius: 6px !important; }
+
+// ---- 滚动条 ----
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d0d5dd; border-radius: 3px; &:hover { background: #b0b5bd; } }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(79,110,247,0.2); &:hover { background: rgba(79,110,247,0.35); } }
+
+// ---- Element Plus 按钮 ----
+.el-button--primary { --el-button-bg-color: #4f6ef7 !important; --el-button-border-color: #4f6ef7 !important; --el-button-hover-bg-color: #6b8aff !important; --el-button-hover-border-color: #6b8aff !important; }
+
+// ---- Drawer 修复 ----
+.el-overlay { z-index: 2001 !important; }
+.el-drawer { z-index: 2002 !important; }
+
+// ---- 暗色覆盖 ----
+html.dark {
+  --el-color-primary: #4f6ef7;
+  --el-bg-color: var(--color-bg);
+  --el-bg-color-overlay: var(--color-bg-card);
+  --el-text-color-primary: var(--color-text);
+  --el-text-color-regular: var(--color-text-secondary);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-border-light);
+  --el-fill-color: rgba(255,255,255,0.03);
+}
+
+// ---- 响应式 ----
+@media (max-width: 768px) {
+  :root { --admin-sidebar-width: 0px; --admin-content-padding: 12px; }
+}
