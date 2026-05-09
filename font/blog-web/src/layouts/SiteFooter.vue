@@ -1,143 +1,192 @@
 <template>
   <footer class="site-footer">
-    <div class="page-container">
-      <div class="footer-content">
+    <div class="page-container footer-shell">
+      <section class="footer-top">
         <div class="footer-brand">
-          <div class="footer-logo">
-            <span class="logo-icon">K</span>
-            <span class="gradient-text">{{ site?.name || 'Kaiii 技术博客' }}</span>
-          </div>
-          <p class="footer-desc">{{ site?.description || '分享技术，记录成长。' }}</p>
-          <!-- 社交图标 -->
-          <div class="footer-social" v-if="contact">
-            <a v-if="contact.github" :href="contact.github" target="_blank" class="social-link" title="GitHub">
-              <el-icon><Promotion /></el-icon>
-            </a>
-            <a v-if="contact.email" :href="'mailto:' + contact.email" class="social-link" title="邮箱">
-              <el-icon><Message /></el-icon>
-            </a>
-            <a v-if="contact.bilibili" :href="contact.bilibili" target="_blank" class="social-link" title="B站">
-              <el-icon><VideoPlay /></el-icon>
-            </a>
-          </div>
+          <p class="footer-kicker">Personal Blog</p>
+          <h2>{{ site.name || 'Kaiii 博客' }}</h2>
+          <p class="footer-desc">
+            {{ site.description || '记录产品、开发与长期主义，把真实的学习与思考沉淀下来。' }}
+          </p>
         </div>
-        <div class="footer-links">
-          <div class="link-group">
-            <h4>内容</h4>
-            <router-link to="/articles">文章列表</router-link>
-            <router-link to="/tutorials">教程中心</router-link>
-            <router-link to="/search">搜索</router-link>
-          </div>
-          <div class="link-group">
-            <h4>联系</h4>
-            <span v-if="contact?.email">{{ contact.email }}</span>
-            <span v-if="contact?.qq">QQ: {{ contact.qq }}</span>
-            <a v-if="contact?.gitee" :href="contact.gitee" target="_blank">Gitee</a>
-          </div>
-          <div class="link-group" v-if="links && links.length">
-            <h4>友情链接</h4>
-            <a v-for="link in links" :key="link.title" :href="link.url" target="_blank">{{ link.title }}</a>
-          </div>
+
+        <nav class="footer-nav">
+          <router-link to="/" class="footer-link">首页</router-link>
+          <router-link to="/articles" class="footer-link">文章</router-link>
+          <router-link to="/tutorials" class="footer-link">教程</router-link>
+          <router-link to="/search" class="footer-link">搜索</router-link>
+        </nav>
+      </section>
+
+      <section class="footer-middle">
+        <div class="footer-meta">
+          <a v-if="contact.email" :href="`mailto:${contact.email}`" class="footer-meta-item">{{ contact.email }}</a>
+          <a v-if="contact.github" :href="contact.github" target="_blank" class="footer-meta-item">GitHub</a>
+          <a v-if="contact.gitee" :href="contact.gitee" target="_blank" class="footer-meta-item">Gitee</a>
+          <a v-if="contact.bilibili" :href="contact.bilibili" target="_blank" class="footer-meta-item">Bilibili</a>
+          <span v-if="footer.icp" class="footer-meta-item">{{ footer.icp }}</span>
+          <span v-if="footer.beian" class="footer-meta-item">{{ footer.beian }}</span>
         </div>
-      </div>
-      <div class="footer-bottom">
-        <span>{{ footer?.copyright || footer?.text || '&copy; 2025-2026 Kaiii.top' }}</span>
-        <div class="footer-bottom-right">
-          <span class="icp" v-if="footer?.icp">{{ footer.icp }}</span>
-          <span class="beian" v-if="footer?.beian">{{ footer.beian }}</span>
+
+        <div v-if="footer.links?.length" class="footer-friends">
+          <a
+            v-for="link in footer.links"
+            :key="link.url"
+            :href="link.url"
+            target="_blank"
+            class="footer-friend-link"
+          >
+            {{ link.title }}
+          </a>
         </div>
-      </div>
+      </section>
+
+      <section class="footer-bottom">
+        <span>{{ footer.copyright || `© ${new Date().getFullYear()} ${site.name || 'Kaiii 博客'}` }}</span>
+        <span>{{ footer.text || site.notice || '愿每一次发布都比上一次更完整。' }}</span>
+      </section>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
-import { Promotion, Message, VideoPlay } from '@element-plus/icons-vue'
 
 const appStore = useAppStore()
-
-const site = computed(() => appStore.siteConfig?.site || null)
-const contact = computed(() => appStore.siteConfig?.contact || null)
-const footer = computed(() => appStore.siteConfig?.footer || null)
-const links = computed(() => appStore.siteConfig?.footer?.links || [])
+const { site, contact, footer } = storeToRefs(appStore)
 </script>
 
 <style scoped lang="scss">
 .site-footer {
-  background: var(--footer-bg);
+  margin-top: 96px;
+  padding: 0 0 28px;
   border-top: 1px solid var(--color-border);
-  padding: 48px 0 24px;
-  margin-top: 80px;
+  background:
+    linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--footer-bg) 86%, transparent) 18%, var(--footer-bg) 100%),
+    radial-gradient(circle at top center, rgba(15, 130, 255, 0.12), transparent 30%);
 }
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 32px;
-  margin-bottom: 32px;
+
+.footer-shell {
+  padding-top: 34px;
 }
-.footer-brand {
-  max-width: 320px;
-}
-.footer-logo {
+
+.footer-top {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  .logo-icon {
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    background: var(--gradient-primary); border-radius: 6px; color: #fff; font-weight: 800;
-  }
+  justify-content: space-between;
+  gap: 32px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--color-border);
 }
-.footer-desc { color: var(--color-text-muted); font-size: 14px; margin-bottom: 16px; }
 
-.footer-social {
+.footer-brand {
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
-.social-link {
-  width: 36px; height: 36px;
-  border-radius: 50%;
+
+.footer-kicker {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: var(--color-primary-light);
+}
+
+.footer-top h2 {
+  font-size: 1.42rem;
+  line-height: 1.15;
+}
+
+.footer-desc {
+  max-width: 620px;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--color-text-muted);
-  font-size: 16px;
-  transition: all 0.3s;
+}
+
+.footer-link {
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  transition: 0.24s ease;
+
   &:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
+    color: var(--color-text);
+    background: var(--color-bg-elevated);
   }
 }
 
-.link-group {
-  h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text); }
-  a, span {
-    display: block; color: var(--color-text-muted); font-size: 13px; margin-bottom: 8px;
-    text-decoration: none; transition: color 0.3s;
-    &:hover { color: var(--color-primary); }
-  }
+.footer-middle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0 18px;
+  border-bottom: 1px solid var(--color-border);
 }
+
+.footer-meta,
+.footer-friends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer-meta-item,
+.footer-friend-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
 .footer-bottom {
-  display: flex; justify-content: space-between; align-items: center;
-  padding-top: 16px; border-top: 1px solid var(--color-border);
-  color: var(--color-text-muted); font-size: 12px;
-}
-.footer-bottom-right {
-  display: flex; gap: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 18px;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
 }
 
-@media (max-width: 768px) {
-  .site-footer { padding: 32px 0 20px; margin-top: 40px; }
-  .footer-content { flex-direction: column; gap: 24px; }
-  .footer-brand { max-width: 100%; }
-  .link-group { width: 50%; }
-  .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
-  .footer-bottom-right { flex-direction: column; gap: 4px; }
+@media (max-width: 900px) {
+  .footer-top,
+  .footer-middle,
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-nav {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-shell {
+    padding-top: 28px;
+  }
+
+  .footer-nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>

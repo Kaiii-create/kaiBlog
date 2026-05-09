@@ -6,7 +6,7 @@ use think\Model;
 class CrawlerLog extends Model
 {
     protected $table = 'crawler_logs';
-    protected $autoWriteTimestamp = 'datetime(3)';
+    protected $autoWriteTimestamp = 'datetime';
     protected $createTime = 'created_at';
     protected $updateTime = false;
 

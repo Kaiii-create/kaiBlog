@@ -1,57 +1,55 @@
 <template>
   <div class="search-page">
     <div class="page-container">
-      <div class="search-header glass-card">
-        <h1 class="gradient-text">搜索</h1>
-        <p>搜索文章、教程等内容</p>
+      <section class="search-hero glass-card">
+        <p class="hero-kicker">Search</p>
+        <h1>搜索内容</h1>
+        <p>支持按关键词搜索文章内容，也可以直接从热门标签开始浏览。</p>
+
         <div class="search-input-wrap">
           <el-input
             v-model="keyword"
-            placeholder="输入关键词搜索文章..."
             size="large"
-            :prefix-icon="Search"
             clearable
+            :prefix-icon="Search"
+            placeholder="输入关键词，例如 Vue、ThinkPHP、部署..."
             @keyup.enter="handleSearch"
             @clear="handleClear"
           >
             <template #append>
-              <el-button class="gradient-btn search-btn" @click="handleSearch">搜索</el-button>
+              <el-button class="primary-btn search-btn" @click="handleSearch">搜索</el-button>
             </template>
           </el-input>
         </div>
-      </div>
+      </section>
 
-      <!-- 搜索结果 -->
-      <div class="search-results" v-if="searched">
-        <div class="result-info">
-          搜索 "{{ lastKeyword }}" 共找到 <strong>{{ total }}</strong> 条结果
+      <section v-if="searched" class="search-results">
+        <div class="result-summary">
+          搜索 “{{ lastKeyword }}”，共找到 <strong>{{ total }}</strong> 条结果
         </div>
 
-        <div class="result-list" v-if="articles.length">
-          <div
+        <div v-if="articles.length" class="result-list">
+          <article
             v-for="article in articles"
             :key="article.id"
-            class="result-item glass-card"
-            @click="$router.push('/articles/' + article.id)"
+            class="result-card glass-card"
+            @click="$router.push(`/articles/${article.id}`)"
           >
-            <div class="result-cover">
-              <el-icon><Notebook /></el-icon>
-            </div>
+            <div class="result-badge">{{ (article.title || 'A').slice(0, 1).toUpperCase() }}</div>
             <div class="result-body">
               <h3>{{ article.title }}</h3>
-              <p>{{ article.summary }}</p>
+              <p>{{ article.summary || '暂无摘要。' }}</p>
               <div class="result-meta">
-                <span><el-icon><Clock /></el-icon> {{ formatDate(article.published_at) }}</span>
-                <span><el-icon><View /></el-icon> {{ article.view_count }}</span>
-                <span><el-icon><StarFilled /></el-icon> {{ article.like_count || 0 }}</span>
+                <span>{{ formatDate(article.published_at) }}</span>
+                <span>{{ article.view_count || 0 }} 次阅读</span>
+                <span>{{ article.like_count || 0 }} 喜欢</span>
               </div>
             </div>
-          </div>
+          </article>
         </div>
+        <el-empty v-else description="没有找到匹配内容" :image-size="120" />
 
-        <el-empty v-else description="未找到相关文章" :image-size="120" />
-
-        <div class="pagination-wrap" v-if="total > pageSize">
+        <div v-if="total > pageSize" class="pagination-wrap">
           <el-pagination
             background
             layout="prev, pager, next"
@@ -61,37 +59,40 @@
             @current-change="handlePageChange"
           />
         </div>
-      </div>
+      </section>
 
-      <!-- 未搜索时展示热门标签 -->
-      <div class="search-hint" v-if="!searched">
-        <div class="hint-tags glass-card">
-          <h3>热门标签</h3>
-          <div class="tags-list">
-            <el-tag
-              v-for="tag in hotTags"
-              :key="tag.id"
-              :color="tag.color || '#3b82f6'"
-              effect="dark"
-              class="hint-tag"
-              @click="searchByTag(tag)"
-            >{{ tag.name }}</el-tag>
+      <section v-else class="tag-panel glass-card">
+        <div class="section-head">
+          <div>
+            <p class="hero-kicker">Hot Tags</p>
+            <h2>热门标签</h2>
           </div>
         </div>
-      </div>
+
+        <div class="tag-list">
+          <button
+            v-for="tag in hotTags"
+            :key="tag.id"
+            type="button"
+            class="tag-pill"
+            @click="searchByTag(tag)"
+          >
+            # {{ tag.name }}
+          </button>
+        </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Search, Notebook, Clock, View, StarFilled } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
 import { webApi } from '../../api'
 
 const route = useRoute()
 const router = useRouter()
-
 const keyword = ref('')
 const lastKeyword = ref('')
 const articles = ref([])
@@ -102,43 +103,36 @@ const searched = ref(false)
 const hotTags = ref([])
 
 async function fetchHotTags() {
-  try {
-    const res = await webApi.getTags()
-    if (res.code === 0) {
-      hotTags.value = (res.data || []).slice(0, 8)
-    }
-  } catch (e) {
-    console.error('获取标签失败:', e)
+  const res = await webApi.getTags()
+  if (res.code === 0) {
+    hotTags.value = (res.data || []).slice(0, 10)
+  }
+}
+
+async function fetchResults() {
+  const res = await webApi.search(lastKeyword.value, {
+    page: currentPage.value,
+    page_size: pageSize.value,
+  })
+  if (res.code === 0 && res.data) {
+    articles.value = res.data.list || []
+    total.value = res.data.pagination?.total || 0
   }
 }
 
 async function handleSearch() {
-  const kw = keyword.value.trim()
-  if (!kw) return
-  lastKeyword.value = kw
-  currentPage.value = 1
+  const nextKeyword = keyword.value.trim()
+  if (!nextKeyword) return
+  lastKeyword.value = nextKeyword
   searched.value = true
-  router.replace({ query: { q: kw } })
+  currentPage.value = 1
+  router.replace({ query: { q: nextKeyword } })
   await fetchResults()
-}
-
-async function fetchResults() {
-  try {
-    const res = await webApi.search(lastKeyword.value, {
-      page: currentPage.value,
-      page_size: pageSize.value
-    })
-    if (res.code === 0 && res.data) {
-      articles.value = res.data.list || []
-      total.value = res.data.pagination?.total || 0
-    }
-  } catch (e) {
-    console.error('搜索失败:', e)
-  }
 }
 
 function handleClear() {
   searched.value = false
+  lastKeyword.value = ''
   articles.value = []
   total.value = 0
   router.replace({ query: {} })
@@ -147,136 +141,154 @@ function handleClear() {
 function handlePageChange(page) {
   currentPage.value = page
   window.scrollTo({ top: 0, behavior: 'smooth' })
-  fetchResults()
+  fetchResults().catch(console.error)
 }
 
 function searchByTag(tag) {
   keyword.value = tag.name
-  handleSearch()
+  handleSearch().catch(console.error)
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return ''
-  return dateStr.split(' ')[0]
+function formatDate(value) {
+  if (!value) return '最近更新'
+  return String(value).split(' ')[0]
 }
 
-onMounted(() => {
-  fetchHotTags()
-  // 如果 URL 中有搜索参数
-  if (route.query.q) {
-    keyword.value = route.query.q
-    handleSearch()
+onMounted(async () => {
+  try {
+    await fetchHotTags()
+    if (route.query.q) {
+      keyword.value = String(route.query.q)
+      await handleSearch()
+    }
+  } catch (error) {
+    console.error('初始化搜索页失败:', error)
   }
 })
 </script>
 
 <style scoped lang="scss">
 .search-page {
-  padding: 24px 0 60px;
-}
-.search-header {
-  padding: 36px;
-  text-align: center;
-  margin-bottom: 28px;
-  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
-  p { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 24px; }
-}
-.search-input-wrap {
-  max-width: 600px;
-  margin: 0 auto;
-  :deep(.el-input__wrapper) {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--color-border);
-    border-radius: 10px 0 0 10px;
-    box-shadow: none;
-    &:hover { border-color: var(--color-border-hover); }
-  }
-  :deep(.el-input__inner) { color: var(--color-text); &::placeholder { color: var(--color-text-muted); } }
-  :deep(.el-input__prefix-inner) .el-icon { color: var(--color-text-muted); }
-  :deep(.el-input-group__append) { background: transparent; border: none; padding: 0; }
-}
-.search-btn {
-  border-radius: 0 10px 10px 0 !important;
-  height: 100%;
+  padding: 24px 0 48px;
 }
 
-/* 搜索结果 */
-.search-results {
-  margin-top: 16px;
+.search-hero,
+.tag-panel {
+  padding: 28px 30px;
 }
-.result-info {
-  font-size: 14px;
+
+.hero-kicker {
+  margin-bottom: 10px;
+  color: var(--color-primary-light);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+}
+
+.search-hero h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.search-hero > p {
   color: var(--color-text-secondary);
-  margin-bottom: 20px;
-  strong { color: var(--color-primary-light); }
+  margin-bottom: 22px;
 }
+
+.search-input-wrap {
+  max-width: 680px;
+}
+
+.search-btn {
+  height: 100%;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.result-summary {
+  margin: 22px 0 18px;
+  color: var(--color-text-secondary);
+  strong {
+    color: var(--color-primary-light);
+  }
+}
+
 .result-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  gap: 14px;
 }
-.result-item {
+
+.result-card {
   display: flex;
-  gap: 20px;
-  padding: 20px 24px;
+  gap: 18px;
+  padding: 22px;
   cursor: pointer;
 }
-.result-cover {
-  width: 80px;
-  height: 80px;
+
+.result-badge {
+  width: 70px;
+  height: 70px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(6,182,212,0.05));
-  border-radius: 12px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  .el-icon { font-size: 36px; color: rgba(59,130,246,0.3); }
+  background: linear-gradient(135deg, rgba(15, 130, 255, 0.18), rgba(48, 207, 208, 0.08));
+  color: var(--color-primary-light);
+  font-size: 2rem;
+  font-weight: 800;
 }
-.result-body {
-  flex: 1;
-  h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-  p { font-size: 13px; color: var(--color-text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
+
+.result-body h3 {
+  font-size: 1.08rem;
+  margin-bottom: 8px;
 }
+
+.result-body p {
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
 .result-meta {
   display: flex;
-  gap: 20px;
-  font-size: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
   color: var(--color-text-muted);
-  .el-icon { font-size: 13px; vertical-align: middle; margin-right: 2px; }
+  font-size: 0.84rem;
 }
+
 .pagination-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
+  margin-top: 34px;
 }
 
-/* 提示区域 */
-.search-hint {
-  margin-top: 24px;
+.section-head {
+  margin-bottom: 18px;
 }
-.hint-tags {
-  padding: 28px;
-  h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--color-text); }
-}
-.tags-list {
+
+.tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
-.hint-tag {
-  cursor: pointer;
-  padding: 6px 14px;
-  &:hover { transform: scale(1.05); }
+
+.tag-pill {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  border-radius: 999px;
+  padding: 10px 14px;
 }
 
 @media (max-width: 768px) {
-  .search-header { padding: 24px 16px; }
-  .search-header h1 { font-size: 1.4rem; }
-  .result-item { flex-direction: column; padding: 16px; }
-  .result-cover { width: 100%; height: 120px; }
-  .result-body h3 { font-size: 14px; }
-}
-@media (max-width: 480px) {
-  .search-input-wrap :deep(.el-input-group__append) .el-button { padding: 8px 12px; }
+  .search-hero,
+  .tag-panel {
+    padding: 22px;
+  }
+
+  .result-card {
+    flex-direction: column;
+  }
 }
 </style>

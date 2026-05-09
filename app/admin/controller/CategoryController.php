@@ -17,6 +17,13 @@ class CategoryController extends BaseController
         return $this->paginate($query, $page, $pageSize);
     }
 
+    public function read($id)
+    {
+        $category = Category::withCount('articles')->find($id);
+        if (!$category) return $this->error('栏目不存在', 404);
+        return $this->success($category);
+    }
+
     public function save()
     {
         $data = $this->request->post();

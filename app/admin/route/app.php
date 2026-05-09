@@ -82,4 +82,29 @@ Route::group('', function () {
     Route::get('crawlers/bot-types', 'CrawlerController/botTypes');
     Route::delete('crawlers/cleanup', 'CrawlerController/cleanup');
     Route::get('crawlers', 'CrawlerController/index');
+
+    // AI 渠道管理
+    Route::post('ai-channels/:id/test', 'AiChannelController/test');
+    Route::resource('ai-channels', 'AiChannelController');
+
+    // AI 模板管理
+    Route::resource('ai-templates', 'AiTemplateController');
+
+    // AI 关键词管理
+    Route::post('ai-keywords/batch-generate', 'AiKeywordController/batchGenerate');
+    Route::post('ai-keywords/:id/generate', 'AiKeywordController/generate');
+    Route::resource('ai-keywords', 'AiKeywordController');
+
+    // AI 任务管理
+    Route::get('ai-tasks/stats', 'AiTaskController/stats');
+    Route::post('ai-tasks/consume', 'AiTaskController/consume');
+    Route::post('ai-tasks/batch-publish', 'AiTaskController/batchPublish');
+    Route::delete('ai-tasks/cleanup', 'AiTaskController/cleanup');
+    Route::post('ai-tasks/:id/run', 'AiTaskController/run');
+    Route::post('ai-tasks/:id/publish', 'AiTaskController/publish');
+    Route::resource('ai-tasks', 'AiTaskController');
+
+    // AI 日志
+    Route::get('ai-logs/stats', 'AiLogController/stats');
+    Route::get('ai-logs', 'AiLogController/index');
 })->middleware(\app\admin\middleware\AdminAuth::class);

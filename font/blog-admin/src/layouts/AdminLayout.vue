@@ -70,7 +70,6 @@ function switchTab(tab) {
   }
 }
 
-// ---- 右键菜单 ----
 function openContextMenu(e, tab) {
   contextMenu.x = e.clientX
   contextMenu.y = e.clientY
@@ -101,7 +100,6 @@ function closeRight() {
   if (idx >= 0) {
     const toRemove = tabs.slice(idx + 1).filter(t => t.closable)
     toRemove.forEach(t => tabsStore.removeTab(t.path))
-    // 如果关闭了当前激活的tab
     if (!tabsStore.tabList.find(t => t.path === tabsStore.activePath)) {
       tabsStore.setActive(contextMenu.tab.path)
       router.push(contextMenu.tab.path)
@@ -114,8 +112,6 @@ function closeRight() {
 <style scoped lang="scss">
 .admin-layout {
   display: flex;
-  gap: 12px;
-  padding: 12px;
   min-height: 100vh;
   background: var(--color-bg);
   transition: background 0.25s;
@@ -125,36 +121,37 @@ function closeRight() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-width: 0;
-  margin-left: calc(var(--sidebar-actual-width) + 12px);
-  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: var(--sidebar-actual-width);
+  transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-content-card {
   flex: 1;
   background: var(--color-bg-card);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  margin: 0 16px 16px 16px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
 }
 
 .admin-tabs-bar {
-  height: 38px;
+  height: 40px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--color-border-light);
   overflow-x: auto;
   flex-shrink: 0;
   &::-webkit-scrollbar { height: 0; }
+  background: var(--color-bg-card);
 }
 .tabs-scroll { display: flex; gap: 0; white-space: nowrap; }
 .tab-item {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; font-size: 13px; cursor: pointer;
+  padding: 0 16px; height: 40px; font-size: 13px; cursor: pointer;
   color: var(--color-text-muted);
   border-bottom: 2px solid transparent;
   transition: all 0.15s;
@@ -203,7 +200,7 @@ function closeRight() {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @media (max-width: 768px) {
-  .admin-layout { padding: 8px; gap: 8px; }
   .admin-main { margin-left: 0; }
+  .admin-content-card { margin: 0 8px 8px 8px; }
 }
 </style>

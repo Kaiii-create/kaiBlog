@@ -38,6 +38,20 @@ div[class*="footer"] {
   background: var(--theme-transition-settle-bg, transparent) !important;
 }
 
+.theme-switching .glass-card,
+.theme-switching [class*="card"],
+.theme-switching .article-card,
+.theme-switching .featured-card,
+.theme-switching .tutorial-card,
+.theme-switching .category-card,
+.theme-switching .tags-cloud {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: none !important;
+}
+
 /* ===== 深色主题（默认） ===== */
 :root,
 [data-theme="dark"] {
@@ -175,6 +189,15 @@ body {
   overflow-x: hidden;
 }
 
+@media (pointer: fine) {
+  body,
+  a,
+  button,
+  [role="button"] {
+    cursor: none !important;
+  }
+}
+
 a {
   color: var(--color-primary-light);
   text-decoration: none;
@@ -191,11 +214,90 @@ a {
   -webkit-backdrop-filter: blur($glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: $radius-lg;
-  transition: all 0.3s ease;
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background-color 0.28s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
   &:hover {
     border-color: var(--color-border-hover);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(48, 160, 255, 0.12);
+    transform: translateY(-3px);
+  }
+}
+
+@media (pointer: fine) {
+  .glass-card,
+  .article-card,
+  .featured-card,
+  .category-item,
+  .tutorial-item,
+  .theme-toggle,
+  .user-entry,
+  .gradient-btn,
+  button,
+  .el-button {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .glass-card::before,
+  .article-card::before,
+  .featured-card::before,
+  .category-item::before,
+  .tutorial-item::before,
+  .theme-toggle::before,
+  .user-entry::before,
+  .gradient-btn::before,
+  button::before,
+  .el-button::before {
+    content: '';
+    position: absolute;
+    inset: auto;
+    width: 140px;
+    height: 140px;
+    left: 50%;
+    top: 50%;
+    margin-left: -70px;
+    margin-top: -70px;
+    background: radial-gradient(circle, rgba(48, 160, 255, 0.18) 0%, rgba(48, 160, 255, 0.08) 36%, rgba(48, 160, 255, 0) 72%);
+    opacity: 0;
+    transform: scale(0.72);
+    transition: opacity 0.2s ease, transform 0.24s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glass-card:hover::before,
+  .article-card:hover::before,
+  .featured-card:hover::before,
+  .category-item:hover::before,
+  .tutorial-item:hover::before,
+  .theme-toggle:hover::before,
+  .user-entry:hover::before,
+  .gradient-btn:hover::before,
+  button:hover::before,
+  .el-button:hover::before {
+    opacity: 1;
+    transform: scale(0.96);
+  }
+
+  a,
+  .nav-link,
+  .filter-chip,
+  .tag-pill,
+  .mobile-action,
+  .section-link {
+    transition: color 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+
+  a:hover,
+  .nav-link:hover,
+  .filter-chip:hover,
+  .tag-pill:hover,
+  .mobile-action:hover,
+  .section-link:hover {
+    color: var(--color-primary);
   }
 }
 
@@ -301,6 +403,126 @@ a {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  border-radius: 50%;
+  transform: translate3d(-100px, -100px, 0);
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  background: linear-gradient(135deg, #30a0ff, #356dff);
+  box-shadow: 0 0 14px rgba(48, 160, 255, 0.45);
+  transition: width 0.18s ease, height 0.18s ease, margin 0.18s ease, opacity 0.2s ease, box-shadow 0.18s ease;
+}
+
+.cursor-ring {
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  margin-top: -20px;
+  border: 1px solid rgba(96, 196, 255, 0.45);
+  background: radial-gradient(circle, rgba(48, 160, 255, 0.12) 0%, rgba(48, 160, 255, 0.05) 34%, rgba(48, 160, 255, 0) 72%);
+  box-shadow: 0 0 0 1px rgba(48, 160, 255, 0.1), 0 0 22px rgba(48, 160, 255, 0.12);
+  filter: blur(0.2px);
+  opacity: 0.88;
+  transition: width 0.24s ease, height 0.24s ease, margin 0.24s ease, opacity 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.cursor-ring::before,
+.cursor-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cursor-ring::before {
+  inset: 5px;
+  border: 1px solid rgba(111, 199, 255, 0.32);
+  opacity: 0.72;
+  animation: cursor-ripple 2.6s ease-out infinite;
+}
+
+.cursor-ring::after {
+  inset: -4px;
+  border: 1px solid rgba(48, 160, 255, 0.2);
+  opacity: 0;
+  animation: cursor-ripple-outer 2.6s ease-out infinite;
+}
+
+.cursor-dot.active {
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  box-shadow: 0 0 18px rgba(48, 160, 255, 0.6);
+}
+
+.cursor-ring.active {
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  margin-top: -26px;
+  opacity: 0.96;
+  border-color: rgba(96, 196, 255, 0.72);
+  box-shadow: 0 0 0 1px rgba(48, 160, 255, 0.18), 0 0 30px rgba(48, 160, 255, 0.22);
+  background: radial-gradient(circle, rgba(48, 160, 255, 0.16) 0%, rgba(48, 160, 255, 0.06) 36%, rgba(48, 160, 255, 0) 74%);
+}
+
+.cursor-dot.pressed {
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+}
+
+.cursor-ring.pressed {
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+  margin-top: -16px;
+  opacity: 0.78;
+  border-color: rgba(96, 196, 255, 0.88);
+  box-shadow: 0 0 0 1px rgba(48, 160, 255, 0.24), 0 0 18px rgba(48, 160, 255, 0.18);
+}
+
+@keyframes cursor-ripple {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.28;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.72;
+  }
+}
+
+@keyframes cursor-ripple-outer {
+  0% {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
 }
 
 @media (max-width: 480px) {

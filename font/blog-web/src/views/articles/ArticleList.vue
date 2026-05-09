@@ -1,38 +1,39 @@
 <template>
   <div class="article-list-page">
     <div class="page-container">
-      <div class="page-header">
-        <h1 class="gradient-text">文章列表</h1>
-        <p>探索精选技术文章，获取实用开发知识</p>
-      </div>
+      <header class="page-banner glass-card">
+        <p class="banner-kicker">Articles</p>
+        <h1>文章列表</h1>
+        <p>按分类浏览最近发布的内容，查看我持续更新的技术文章与经验记录。</p>
+      </header>
 
-      <!-- 分类 tab 切换 -->
-      <div class="category-tabs glass-card">
-        <div class="tabs-scroll">
-          <span
-            class="tab-item"
-            :class="{ active: currentCategory === 0 }"
-            @click="switchCategory(0)"
-          >全部</span>
-          <span
-            v-for="cat in categories"
-            :key="cat.id"
-            class="tab-item"
-            :class="{ active: currentCategory === cat.id }"
-            @click="switchCategory(cat.id)"
-          >{{ cat.name }}</span>
-        </div>
-      </div>
+      <section class="filters glass-card">
+        <button
+          type="button"
+          class="filter-chip"
+          :class="{ active: currentCategory === 0 }"
+          @click="switchCategory(0)"
+        >
+          全部
+        </button>
+        <button
+          v-for="category in categories"
+          :key="category.id"
+          type="button"
+          class="filter-chip"
+          :class="{ active: currentCategory === category.id }"
+          @click="switchCategory(category.id)"
+        >
+          {{ category.name }}
+        </button>
+      </section>
 
-      <!-- 文章列表 -->
-      <div class="article-grid" v-if="articles.length">
+      <div v-if="articles.length" class="article-grid">
         <ArticleCard v-for="article in articles" :key="article.id" :article="article" />
       </div>
+      <el-empty v-else description="暂无文章内容" :image-size="120" />
 
-      <el-empty v-else description="暂无文章" :image-size="120" />
-
-      <!-- 分页 -->
-      <div class="pagination-wrap" v-if="total > 0">
+      <div v-if="total > pageSize" class="pagination-wrap">
         <el-pagination
           background
           layout="prev, pager, next"
@@ -47,14 +48,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { webApi } from '../../api'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ArticleCard from '../../components/ArticleCard.vue'
+import { webApi } from '../../api'
 
-const route = useRoute()
 const router = useRouter()
-
 const articles = ref([])
 const categories = ref([])
 const total = ref(0)
@@ -63,96 +62,126 @@ const pageSize = ref(9)
 const currentCategory = ref(0)
 
 async function fetchCategories() {
-  try {
-    const res = await webApi.getCategories()
-    if (res.code === 0 && res.data) {
-      categories.value = res.data.filter(c => c.parent_id === 0)
-    }
-  } catch (e) {
-    console.error('获取栏目列表失败:', e)
+  const res = await webApi.getCategories()
+  if (res.code === 0) {
+    categories.value = (res.data || []).filter((item) => !item.parent_id)
   }
 }
 
 async function fetchArticles() {
   const params = {
     page: currentPage.value,
-    page_size: pageSize.value
+    page_size: pageSize.value,
   }
-  if (currentCategory.value > 0) {
+
+  if (currentCategory.value) {
     params.category_id = currentCategory.value
   }
-  try {
-    const res = await webApi.getArticles(params)
-    if (res.code === 0 && res.data) {
-      articles.value = res.data.list || []
-      total.value = res.data.pagination?.total || 0
-    }
-  } catch (e) {
-    console.error('获取文章列表失败:', e)
+
+  const res = await webApi.getArticles(params)
+  if (res.code === 0 && res.data) {
+    articles.value = res.data.list || []
+    total.value = res.data.pagination?.total || 0
   }
 }
 
-function switchCategory(catId) {
-  currentCategory.value = catId
+function switchCategory(categoryId) {
+  currentCategory.value = categoryId
   currentPage.value = 1
-  router.replace({ query: { category: catId > 0 ? catId : undefined } })
-  fetchArticles()
+  router.replace({ query: categoryId ? { category: categoryId } : {} })
+  fetchArticles().catch(console.error)
 }
 
 function handlePageChange(page) {
   currentPage.value = page
   window.scrollTo({ top: 0, behavior: 'smooth' })
-  fetchArticles()
+  fetchArticles().catch(console.error)
 }
 
-onMounted(() => {
-  fetchCategories()
-  fetchArticles()
+onMounted(async () => {
+  try {
+    await Promise.all([fetchCategories(), fetchArticles()])
+  } catch (error) {
+    console.error('获取文章列表失败:', error)
+  }
 })
 </script>
 
 <style scoped lang="scss">
 .article-list-page {
-  padding-bottom: 60px;
+  padding: 24px 0 48px;
 }
-.category-tabs {
-  padding: 12px 20px;
-  margin-bottom: 28px;
-  margin-top: -8px;
+
+.page-banner {
+  padding: 28px 30px;
+  margin-bottom: 22px;
 }
-.tabs-scroll {
+
+.banner-kicker {
+  margin-bottom: 10px;
+  color: var(--color-primary-light);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+}
+
+.page-banner h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.page-banner p:last-child {
+  color: var(--color-text-secondary);
+  max-width: 620px;
+}
+
+.filters {
+  padding: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 24px;
 }
-.tab-item {
-  padding: 8px 20px;
-  font-size: 14px;
+
+.filter-chip {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
   color: var(--color-text-secondary);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  &:hover { background: rgba(59, 130, 246, 0.08); color: var(--color-text); }
+  border-radius: 999px;
+  padding: 10px 16px;
   &.active {
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, #0f82ff, #356dff);
+    border-color: transparent;
     color: #fff;
-    font-weight: 500;
   }
 }
+
 .article-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
+
 .pagination-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 48px;
+  margin-top: 40px;
 }
+
+@media (max-width: 1024px) {
+  .article-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
-  .article-grid { grid-template-columns: 1fr; }
-}
-@media (min-width: 769px) and (max-width: 1024px) {
-  .article-grid { grid-template-columns: repeat(2, 1fr); }
+  .page-banner,
+  .filters {
+    padding: 20px;
+  }
+
+  .article-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

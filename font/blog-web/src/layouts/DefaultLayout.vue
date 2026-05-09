@@ -27,7 +27,6 @@ import FloatingToolbar from '../components/FloatingToolbar.vue'
 }
 .main-content {
   flex: 1;
-  padding-top: 70px;
 }
 .fade-slide-enter-active, .fade-slide-leave-active {
   transition: all 0.3s ease;

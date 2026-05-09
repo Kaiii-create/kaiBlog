@@ -92,6 +92,12 @@ class ConfigController extends BaseController
             // 社交链接（兼容旧字段 + 新字段合并）
             'social' => $socialLinks,
 
+            // 微信登录
+            'wx_login' => [
+                'enabled' => true,
+                'app_id'  => 'wxed57e35f1d6a2e91',
+            ],
+
             // SEO（前端 head 渲染用）
             'seo' => [
                 'home_title'       => $all['seo_home_title'] ?? '',

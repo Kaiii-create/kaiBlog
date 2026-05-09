@@ -1,66 +1,49 @@
 <template>
-  <header class="site-header" :class="{ 'menu-open': mobileMenuOpen }">
-    <div class="header-inner page-container">
-      <router-link to="/" class="logo">
-        <span class="logo-icon">K</span>
-        <span class="logo-text gradient-text">Kaiii 博客</span>
+  <header class="site-header">
+    <div class="page-container header-inner">
+      <router-link to="/" class="brand">
+        <span class="brand-badge">K</span>
+        <div class="brand-copy">
+          <strong>{{ siteName }}</strong>
+          <span>{{ siteTagline }}</span>
+        </div>
       </router-link>
 
-      <nav class="nav-menu desktop-nav">
-        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          <el-icon><House /></el-icon> 首页
-        </router-link>
-        <router-link to="/articles" class="nav-link" active-class="active">
-          <el-icon><Notebook /></el-icon> 文章
-        </router-link>
-        <router-link to="/tutorials" class="nav-link" active-class="active">
-          <el-icon><Reading /></el-icon> 教程
-        </router-link>
+      <nav class="desktop-nav">
+        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">首页</router-link>
+        <router-link to="/articles" class="nav-link" :class="{ active: $route.path.startsWith('/articles') }">文章</router-link>
+        <router-link to="/tutorials" class="nav-link" :class="{ active: $route.path.startsWith('/tutorials') }">教程</router-link>
+        <router-link to="/search" class="nav-link" :class="{ active: $route.path.startsWith('/search') }">搜索</router-link>
       </nav>
 
       <div class="header-actions">
-        <div class="search-bar" @click="goSearch">
-          <el-icon><Search /></el-icon>
-          <span class="search-placeholder">搜索</span>
-        </div>
-
-        <button
-          ref="themeBtnRef"
-          class="theme-toggle"
-          @click="handleToggleTheme"
-          :title="appStore.darkMode ? '切换日间模式' : '切换夜间模式'"
-        >
-          <el-icon v-if="appStore.darkMode"><Sunny /></el-icon>
-          <el-icon v-else><Moon /></el-icon>
+        <button class="theme-toggle" type="button" @click="appStore.toggleDarkMode()">
+          <span class="theme-icon">{{ appStore.darkMode ? '☀' : '☾' }}</span>
+          <span class="theme-label">{{ appStore.darkMode ? '浅色' : '深色' }}</span>
         </button>
 
         <template v-if="userStore.isLoggedIn">
-          <el-dropdown trigger="click" class="desktop-user">
-            <span class="user-avatar">
-              <el-avatar :size="32" :icon="UserFilled" />
-              <span class="username">{{ userStore.nickname || '用户' }}</span>
-            </span>
+          <el-dropdown trigger="click">
+            <button class="user-entry" type="button">
+              <el-avatar :size="30" :icon="UserFilled" />
+              <span>{{ userStore.nickname || '用户' }}</span>
+            </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="$router.push('/member/profile')">
-                  <el-icon><User /></el-icon> 会员中心
-                </el-dropdown-item>
-                <el-dropdown-item @click="$router.push('/member/favorites')">
-                  <el-icon><Star /></el-icon> 我的收藏
-                </el-dropdown-item>
-                <el-dropdown-item divided @click="handleLogout">
-                  <el-icon><SwitchButton /></el-icon> 退出登录
-                </el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/member/profile')">个人资料</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/member/favorites')">我的收藏</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/member/comments')">我的评论</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
         </template>
         <template v-else>
-          <el-button class="nav-btn login-btn" @click="$router.push('/login')">登录</el-button>
-          <el-button class="nav-btn gradient-btn register-btn" @click="$router.push('/register')">注册</el-button>
+          <el-button class="ghost-btn" @click="$router.push('/login')">登录</el-button>
+          <el-button class="primary-btn" @click="$router.push('/register')">注册</el-button>
         </template>
 
-        <button class="hamburger" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+        <button class="menu-toggle" type="button" @click="mobileMenuOpen = !mobileMenuOpen">
           <span></span>
           <span></span>
           <span></span>
@@ -68,83 +51,66 @@
       </div>
     </div>
 
-    <div class="mobile-overlay" v-if="mobileMenuOpen" @click="closeMobileMenu"></div>
+    <transition name="mobile-fade">
+      <div v-if="mobileMenuOpen" class="mobile-mask" @click="mobileMenuOpen = false"></div>
+    </transition>
 
-    <div class="mobile-menu" :class="{ open: mobileMenuOpen }">
-      <div class="mobile-menu-header">
-        <span class="gradient-text">导航</span>
-        <button class="close-btn" @click="closeMobileMenu">
-          <el-icon><Close /></el-icon>
-        </button>
-      </div>
-
-      <nav class="mobile-nav">
-        <router-link to="/" class="mobile-nav-link" @click="closeMobileMenu">
-          <el-icon><House /></el-icon> 首页
-        </router-link>
-        <router-link to="/articles" class="mobile-nav-link" @click="closeMobileMenu">
-          <el-icon><Notebook /></el-icon> 文章
-        </router-link>
-        <router-link to="/tutorials" class="mobile-nav-link" @click="closeMobileMenu">
-          <el-icon><Reading /></el-icon> 教程
-        </router-link>
-        <router-link to="/search" class="mobile-nav-link" @click="closeMobileMenu">
-          <el-icon><Search /></el-icon> 搜索
-        </router-link>
-      </nav>
-
-      <div class="mobile-user-section">
-        <template v-if="userStore.isLoggedIn">
-          <div class="mobile-user-info">
-            <el-avatar :size="40" :icon="UserFilled" />
-            <div>
-              <p class="mobile-nickname">{{ userStore.nickname || '用户' }}</p>
-              <p class="mobile-email">{{ userStore.userInfo?.email || '' }}</p>
-            </div>
+    <transition name="mobile-slide">
+      <aside v-if="mobileMenuOpen" class="mobile-panel">
+        <div class="mobile-panel-head">
+          <div>
+            <strong>{{ siteName }}</strong>
+            <p>{{ siteTagline }}</p>
           </div>
-          <router-link to="/member/profile" class="mobile-menu-link" @click="closeMobileMenu">
-            <el-icon><User /></el-icon> 会员中心
-          </router-link>
-          <router-link to="/member/favorites" class="mobile-menu-link" @click="closeMobileMenu">
-            <el-icon><Star /></el-icon> 我的收藏
-          </router-link>
-          <router-link to="/member/comments" class="mobile-menu-link" @click="closeMobileMenu">
-            <el-icon><ChatDotSquare /></el-icon> 我的评论
-          </router-link>
-          <a class="mobile-menu-link logout-link" @click="handleLogout">
-            <el-icon><SwitchButton /></el-icon> 退出登录
-          </a>
-        </template>
-        <template v-else>
-          <div class="mobile-auth-btns">
-            <el-button class="gradient-btn" @click="$router.push('/login'); closeMobileMenu()" style="flex: 1">登录</el-button>
-            <el-button class="nav-btn" @click="$router.push('/register'); closeMobileMenu()" style="flex: 1">注册</el-button>
-          </div>
-        </template>
-      </div>
-    </div>
+          <button type="button" class="mobile-close" @click="mobileMenuOpen = false">×</button>
+        </div>
+
+        <nav class="mobile-nav">
+          <router-link to="/" class="mobile-link" @click="closeMobileMenu">首页</router-link>
+          <router-link to="/articles" class="mobile-link" @click="closeMobileMenu">文章</router-link>
+          <router-link to="/tutorials" class="mobile-link" @click="closeMobileMenu">教程</router-link>
+          <router-link to="/search" class="mobile-link" @click="closeMobileMenu">搜索</router-link>
+        </nav>
+
+        <div class="mobile-actions">
+          <button class="theme-toggle mobile-theme" type="button" @click="appStore.toggleDarkMode()">
+            <span class="theme-icon">{{ appStore.darkMode ? '☀' : '☾' }}</span>
+            <span class="theme-label">{{ appStore.darkMode ? '切换到浅色模式' : '切换到深色模式' }}</span>
+          </button>
+
+          <template v-if="userStore.isLoggedIn">
+            <router-link to="/member/profile" class="mobile-action" @click="closeMobileMenu">个人资料</router-link>
+            <router-link to="/member/favorites" class="mobile-action" @click="closeMobileMenu">我的收藏</router-link>
+            <router-link to="/member/comments" class="mobile-action" @click="closeMobileMenu">我的评论</router-link>
+            <button class="mobile-action danger" type="button" @click="handleLogout">退出登录</button>
+          </template>
+          <template v-else>
+            <el-button class="ghost-btn full-width" @click="$router.push('/login'); closeMobileMenu()">登录</el-button>
+            <el-button class="primary-btn full-width" @click="$router.push('/register'); closeMobileMenu()">注册</el-button>
+          </template>
+        </div>
+      </aside>
+    </transition>
   </header>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
-import {
-  House, Notebook, Reading, Search,
-  UserFilled, User, Star, SwitchButton,
-  Close, Sunny, Moon, ChatDotSquare
-} from '@element-plus/icons-vue'
-import { useUserStore } from '../stores/user'
-import { useAppStore } from '../stores/app'
+import { computed, ref } from 'vue'
+import { UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
 
-const userStore = useUserStore()
-const appStore = useAppStore()
 const router = useRouter()
+const appStore = useAppStore()
+const userStore = useUserStore()
 const mobileMenuOpen = ref(false)
-const themeBtnRef = ref(null)
 
-function goSearch() {
-  router.push('/search')
+const siteName = computed(() => appStore.site.name || 'Kaiii 博客')
+const siteTagline = computed(() => appStore.site.description || '记录开发、写作与独立表达。')
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false
 }
 
 function handleLogout() {
@@ -152,373 +118,249 @@ function handleLogout() {
   closeMobileMenu()
   router.push('/')
 }
-
-async function handleToggleTheme() {
-  const btn = themeBtnRef.value
-  if (!btn) {
-    appStore.toggleDarkMode()
-    return
-  }
-
-  const goingDark = !appStore.darkMode
-  const rect = btn.getBoundingClientRect()
-  const cx = rect.left + rect.width / 2
-  const cy = rect.top + rect.height / 2
-  const maxR = Math.hypot(
-    Math.max(cx, window.innerWidth - cx),
-    Math.max(cy, window.innerHeight - cy)
-  )
-
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.ceil(window.innerWidth * window.devicePixelRatio)
-  canvas.height = Math.ceil(window.innerHeight * window.devicePixelRatio)
-  canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:9999;pointer-events:none;'
-  document.body.appendChild(canvas)
-
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    canvas.remove()
-    appStore.toggleDarkMode()
-    return
-  }
-
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-
-  const overlayColor = goingDark ? '#0b1124' : '#0b1124'
-  const startRadius = goingDark ? maxR : 0
-  const endRadius = goingDark ? 0 : maxR
-  const duration = 520
-
-  document.documentElement.classList.add('theme-switching')
-
-  if (!goingDark) {
-    appStore.toggleDarkMode()
-    await nextTick()
-  }
-
-  await new Promise((resolve) => {
-    const start = performance.now()
-
-    const drawFrame = (radius) => {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-      ctx.fillStyle = overlayColor
-      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
-      ctx.globalCompositeOperation = 'destination-out'
-      ctx.beginPath()
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.globalCompositeOperation = 'source-over'
-    }
-
-    const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      const radius = startRadius + (endRadius - startRadius) * eased
-      drawFrame(radius)
-
-      if (progress < 1) {
-        requestAnimationFrame(tick)
-        return
-      }
-
-      resolve()
-    }
-
-    requestAnimationFrame(tick)
-  })
-
-  if (goingDark) {
-    appStore.toggleDarkMode()
-    await nextTick()
-  }
-
-  await new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(resolve)
-    })
-  })
-
-  document.documentElement.classList.remove('theme-switching')
-  canvas.remove()
-}
-
-function toggleMobileMenu() {
-  mobileMenuOpen.value = !mobileMenuOpen.value
-  document.body.style.overflow = mobileMenuOpen.value ? 'hidden' : ''
-}
-
-function closeMobileMenu() {
-  mobileMenuOpen.value = false
-  document.body.style.overflow = ''
-}
 </script>
 
 <style scoped lang="scss">
 .site-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--header-bg, rgba(15, 15, 26, 0.85));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: 120;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
   border-bottom: 1px solid var(--color-border);
 }
+
 .header-inner {
+  min-height: 78px;
   display: flex;
   align-items: center;
-  height: 70px;
+  justify-content: space-between;
   gap: 24px;
 }
-.logo {
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+}
+
+.brand-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f82ff, #30cfd0);
+  box-shadow: 0 14px 30px rgba(15, 130, 255, 0.24);
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong {
+    font-size: 1.02rem;
+    line-height: 1.1;
+  }
+  span {
+    font-size: 0.76rem;
+    color: var(--color-text-muted);
+  }
+}
+
+.desktop-nav {
   display: flex;
   align-items: center;
   gap: 8px;
-  text-decoration: none;
-  flex-shrink: 0;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
 }
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  border-radius: 8px;
-  color: #fff;
-  font-weight: 800;
-  font-size: 18px;
-}
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-}
-.desktop-nav {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-}
+
 .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  padding: 10px 16px;
+  border-radius: 999px;
   color: var(--color-text-secondary);
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s;
-  &:hover { color: var(--color-text); background: rgba(59,130,246,0.08); }
-  &.active { color: var(--color-primary); background: rgba(59,130,246,0.12); }
+  font-size: 0.92rem;
+  transition: 0.25s ease;
+  &.active,
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-bg-elevated);
+  }
 }
+
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 10px;
 }
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--input-bg, rgba(255,255,255,0.04));
+
+.theme-toggle,
+.user-entry,
+.menu-toggle,
+.mobile-close,
+.mobile-action {
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s;
-  color: var(--color-text-muted);
-  font-size: 13px;
-  &:hover { border-color: var(--color-primary); color: var(--color-text-secondary); }
-  .search-placeholder { display: inline; }
+  background: var(--color-bg-card);
+  color: var(--color-text);
 }
 
 .theme-toggle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--input-bg);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  font-size: 18px;
-  &:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-glow);
-  }
+  gap: 10px;
+  border-radius: 999px;
+  padding: 9px 14px;
 }
 
-.nav-btn {
-  &.el-button--default {
-    background: transparent;
-    border-color: var(--color-border);
-    color: var(--color-text);
-    &:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  }
+.theme-icon {
+  font-size: 1rem;
 }
-.login-btn { display: inline-flex; }
-.register-btn { display: inline-flex; }
 
-.user-avatar {
-  display: flex;
+.theme-label {
+  font-size: 0.88rem;
+}
+
+.user-entry {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: background 0.3s;
-  &:hover { background: rgba(59,130,246,0.08); }
-  .username { font-size: 14px; color: var(--color-text); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
 }
 
-.hamburger {
-  display: none;
-  width: 36px;
-  height: 36px;
+.ghost-btn {
   background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #0f82ff, #356dff);
+  border: none;
+  color: #fff;
+}
+
+.menu-toggle {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: all 0.3s;
-  &:hover { border-color: var(--color-primary); }
   span {
-    display: block;
     width: 18px;
     height: 2px;
-    background: var(--color-text);
-    border-radius: 2px;
-    transition: all 0.3s;
+    background: currentColor;
+    border-radius: 999px;
   }
-  &.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
-  &.active span:nth-child(2) { opacity: 0; }
-  &.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
 }
 
-.mobile-overlay {
-  display: none;
+.mobile-mask {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 98;
+  background: rgba(5, 10, 18, 0.48);
 }
 
-.mobile-menu {
-  display: none;
+.mobile-panel {
   position: fixed;
+  right: 0;
   top: 0;
-  right: -320px;
-  width: 300px;
-  max-width: 80vw;
+  width: min(340px, 85vw);
   height: 100vh;
-  background: var(--color-bg);
+  padding: 22px;
+  background: var(--color-bg-card);
   border-left: 1px solid var(--color-border);
-  z-index: 99;
-  flex-direction: column;
-  padding: 20px;
-  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  &.open { right: 0; }
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.16);
+}
 
-  .mobile-menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 20px;
-    font-size: 18px;
-    font-weight: 700;
-  }
-  .close-btn {
-    width: 32px;
-    height: 32px;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.mobile-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  p {
+    margin-top: 6px;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
   }
 }
 
-.mobile-nav {
+.mobile-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+}
+
+.mobile-nav,
+.mobile-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 24px;
+  gap: 10px;
 }
-.mobile-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
+
+.mobile-link,
+.mobile-action {
+  border-radius: 14px;
+  padding: 13px 14px;
   color: var(--color-text);
-  text-decoration: none;
-  font-size: 15px;
-  transition: all 0.2s;
-  &:hover { background: rgba(59,130,246,0.08); }
-  &.router-link-active { color: var(--color-primary); background: rgba(59,130,246,0.12); }
-  .el-icon { font-size: 18px; }
 }
 
-.mobile-user-section {
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-}
-.mobile-user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  .mobile-nickname { font-size: 15px; font-weight: 600; color: var(--color-text); }
-  .mobile-email { font-size: 12px; color: var(--color-text-muted); }
-}
-.mobile-menu-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { background: rgba(59,130,246,0.06); color: var(--color-text); }
-  .el-icon { font-size: 18px; }
-}
-.logout-link { color: var(--color-danger); }
-
-.mobile-auth-btns {
-  display: flex;
-  gap: 12px;
+.mobile-theme {
+  justify-content: center;
+  margin-bottom: 10px;
 }
 
-@media (max-width: 900px) {
-  .desktop-nav, .desktop-user, .login-btn, .register-btn { display: none; }
-  .search-placeholder { display: none; }
-  .hamburger { display: flex; }
-  .mobile-overlay { display: block; }
-  .mobile-menu { display: flex; }
+.danger {
+  color: #e05b65;
 }
 
-@media (min-width: 901px) {
-  .mobile-overlay, .mobile-menu { display: none !important; }
-  .hamburger { display: none; }
+.full-width {
+  width: 100%;
+}
+
+.mobile-fade-enter-active,
+.mobile-fade-leave-active,
+.mobile-slide-enter-active,
+.mobile-slide-leave-active {
+  transition: 0.24s ease;
+}
+
+.mobile-fade-enter-from,
+.mobile-fade-leave-to {
+  opacity: 0;
+}
+
+.mobile-slide-enter-from,
+.mobile-slide-leave-to {
+  transform: translateX(24px);
+  opacity: 0;
+}
+
+@media (max-width: 980px) {
+  .desktop-nav,
+  .header-actions :deep(.el-dropdown),
+  .header-actions .ghost-btn,
+  .header-actions .primary-btn {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .theme-label {
+    display: none;
+  }
 }
 </style>

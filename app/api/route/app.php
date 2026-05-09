@@ -10,6 +10,15 @@ Route::post('auth/login', 'Auth/login');
 // 验证码
 Route::get('captcha', 'CaptchaController/index');
 
+// 微信公众号回调（GET验证 + POST消息）
+Route::get('wx/event', 'WxController/event');
+Route::post('wx/event', 'WxController/event');
+Route::get('wx/config', 'WxController/config');
+
+// 微信登录
+Route::get('auth/wx-login', 'WxController/wxLogin');
+Route::get('auth/wx-check', 'WxController/wxCheck');
+
 // 文章 (详情路由放前面)
 Route::get('articles/:id', 'ArticleController/read');
 Route::get('articles', 'ArticleController/index');

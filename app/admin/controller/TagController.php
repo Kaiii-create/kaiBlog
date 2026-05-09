@@ -17,6 +17,13 @@ class TagController extends BaseController
         return $this->paginate($query, $page, $pageSize);
     }
 
+    public function read($id)
+    {
+        $tag = Tag::find($id);
+        if (!$tag) return $this->error('标签不存在', 404);
+        return $this->success($tag);
+    }
+
     public function save()
     {
         $data = $this->request->post();

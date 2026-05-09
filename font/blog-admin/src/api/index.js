@@ -116,6 +116,13 @@ export const adminApi = {
   async auditComment(id, status) { return api.put(`/admin/comments/${id}/audit`, { status }) },
   async deleteComment(id) { return api.delete(`/admin/comments/${id}`) },
 
+  // ---- 消息通知 ----
+  async getMessages(params) { return api.get('/admin/messages', { params: p(params) }) },
+  async getUnreadCount() { return api.get('/admin/messages/unread-count') },
+  async markMessageRead(id) { return api.put(`/admin/messages/${id}/read`) },
+  async markAllRead() { return api.put('/admin/messages/read-all') },
+  async deleteMessage(id) { return api.delete(`/admin/messages/${id}`) },
+
   // ---- 用户管理 ----
   async getUsers(params) { return api.get('/admin/users', { params: p(params) }) },
   async updateUserStatus(id, status) { return api.put(`/admin/users/${id}/status`, { status }) },
