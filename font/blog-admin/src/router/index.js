@@ -20,6 +20,7 @@ const routes = [
       { path: 'articles/edit/:id', name: 'ArticleEdit', component: () => import('../views/articles/ArticleForm.vue'), meta: { title: '编辑文章' } },
       { path: 'tutorials', name: 'AdminTutorials', component: () => import('../views/tutorials/TutorialList.vue'), meta: { title: '教程管理' } },
       { path: 'tutorials/create', name: 'TutorialCreate', component: () => import('../views/tutorials/TutorialForm.vue'), meta: { title: '新建教程' } },
+      { path: 'tutorials/edit/:id', name: 'TutorialEdit', component: () => import('../views/tutorials/TutorialForm.vue'), meta: { title: '编辑教程' } },
       { path: 'tutorials/:id/chapters', name: 'TutorialChapters', component: () => import('../views/tutorials/TutorialChapters.vue'), meta: { title: '章节管理' } },
       { path: 'users', name: 'AdminUsers', component: () => import('../views/users/UserList.vue'), meta: { title: '用户管理' } },
       { path: 'comments', name: 'AdminComments', component: () => import('../views/comments/CommentList.vue'), meta: { title: '评论管理' } },

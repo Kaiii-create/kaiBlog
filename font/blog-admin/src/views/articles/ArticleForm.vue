@@ -145,12 +145,8 @@ async function loadCategories() {
 
 async function loadTags() {
   try {
-    const mockTags = [
-      { id: 1, name: 'Vue3' }, { id: 2, name: 'JavaScript' },
-      { id: 3, name: 'TypeScript' }, { id: 4, name: 'PHP' },
-      { id: 5, name: 'MySQL' }, { id: 6, name: '性能优化' },
-    ]
-    tags.value = mockTags
+    const res = await adminApi.getTags()
+    if (res.code === 0) tags.value = res.data.list || res.data || []
   } catch (e) {}
 }
 
@@ -176,12 +172,22 @@ async function loadArticle() {
   }
 }
 
+const coverUploading = ref(false)
+
 function handleCoverChange(file) {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    form.cover = e.target.result
-  }
-  reader.readAsDataURL(file.raw)
+  coverUploading.value = true
+  adminApi.uploadFile(file.raw).then(res => {
+    if (res.code === 0) {
+      form.cover = res.data.url || res.data.path || res.data
+      ElMessage.success('封面上传成功')
+    } else {
+      ElMessage.error(res.message || '封面上传失败')
+    }
+  }).catch(() => {
+    ElMessage.error('封面上传失败')
+  }).finally(() => {
+    coverUploading.value = false
+  })
 }
 
 async function handleSubmit() {

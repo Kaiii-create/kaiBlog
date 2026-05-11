@@ -39,7 +39,7 @@
             <el-button link type="primary" size="small" @click="$router.push(`/admin/tutorials/${row.id}/chapters`)">
               章节管理
             </el-button>
-            <el-button link type="primary" size="small" @click="$router.push(`/admin/articles/edit/${row.id}`)">编辑</el-button>
+            <el-button link type="primary" size="small" @click="openEditDialog(row)">编辑</el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -185,10 +185,22 @@ function openEditDialog(row) {
   dialogVisible.value = true
 }
 
+const editCoverUploading = ref(false)
+
 function handleEditCover(file) {
-  const reader = new FileReader()
-  reader.onload = (e) => { editForm.cover = e.target.result }
-  reader.readAsDataURL(file.raw)
+  editCoverUploading.value = true
+  adminApi.uploadFile(file.raw).then(res => {
+    if (res.code === 0) {
+      editForm.cover = res.data.url || res.data.path || res.data
+      ElMessage.success('封面上传成功')
+    } else {
+      ElMessage.error(res.message || '封面上传失败')
+    }
+  }).catch(() => {
+    ElMessage.error('封面上传失败')
+  }).finally(() => {
+    editCoverUploading.value = false
+  })
 }
 
 async function handleEditSubmit() {

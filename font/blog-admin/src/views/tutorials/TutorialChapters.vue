@@ -277,9 +277,14 @@ async function updateSortOrder(items) {
   const updated = items.map((item, idx) => ({ ...item, sort: idx + 1 }))
   chapters.value = updated
   try {
-    // 批量更新排序 - 使用第一个章节的更新接口作为示例
-    // 实际项目中应有批量排序接口
-    ElMessage.success('排序已更新')
+    const sortData = updated.map(item => ({ id: item.id, sort: item.sort }))
+    const res = await adminApi.sortChapters({ list: sortData })
+    if (res.code === 0) {
+      ElMessage.success('排序已更新')
+    } else {
+      ElMessage.error(res.message || '排序更新失败')
+      loadData()
+    }
   } catch (e) {
     ElMessage.error('排序更新失败')
     loadData()

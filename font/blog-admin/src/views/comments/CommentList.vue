@@ -146,7 +146,7 @@ function statusLabel(s) {
 
 async function handleApprove(row) {
   try {
-    const res = await adminApi.updateCommentStatus(row.id, 1)
+    const res = await adminApi.auditComment(row.id, 1)
     if (res.code === 0) {
       ElMessage.success('审核通过')
       fetchList()
@@ -158,7 +158,7 @@ async function handleApprove(row) {
 
 async function handleReject(row) {
   try {
-    const res = await adminApi.updateCommentStatus(row.id, 2)
+    const res = await adminApi.auditComment(row.id, 2)
     if (res.code === 0) {
       ElMessage.success('已拒绝')
       fetchList()

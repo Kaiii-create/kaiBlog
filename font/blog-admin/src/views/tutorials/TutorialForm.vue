@@ -115,17 +115,48 @@ const rules = {
 }
 
 onMounted(() => {
-  // 如果是编辑模式，需要加载数据
-  // adminApi 没有单独的 getTutorialDetail 接口，TutorialForm 从列表进来时默认为新建
-  // 编辑使用 TutorialList 中的弹窗
+  if (isEdit.value) {
+    loadTutorial()
+  }
 })
 
-function handleCoverChange(file) {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    form.cover = e.target.result
+async function loadTutorial() {
+  try {
+    const res = await adminApi.getTutorialDetail(route.params.id)
+    if (res.code === 0) {
+      const d = res.data.tutorial || res.data
+      form.title = d.title
+      form.slug = d.slug
+      form.description = d.description || ''
+      form.difficulty = d.difficulty
+      form.status = d.status
+      form.sort = d.sort || 0
+      form.cover = d.cover || ''
+    } else {
+      ElMessage.error('教程不存在')
+      router.push('/admin/tutorials')
+    }
+  } catch (e) {
+    ElMessage.error('加载教程失败')
   }
-  reader.readAsDataURL(file.raw)
+}
+
+const coverUploading = ref(false)
+
+function handleCoverChange(file) {
+  coverUploading.value = true
+  adminApi.uploadFile(file.raw).then(res => {
+    if (res.code === 0) {
+      form.cover = res.data.url || res.data.path || res.data
+      ElMessage.success('封面上传成功')
+    } else {
+      ElMessage.error(res.message || '封面上传失败')
+    }
+  }).catch(() => {
+    ElMessage.error('封面上传失败')
+  }).finally(() => {
+    coverUploading.value = false
+  })
 }
 
 async function handleSubmit() {
@@ -133,15 +164,20 @@ async function handleSubmit() {
   if (!valid) return
   submitLoading.value = true
   try {
-    const res = await adminApi.createTutorial(form)
+    let res
+    if (isEdit.value) {
+      res = await adminApi.updateTutorial(route.params.id, form)
+    } else {
+      res = await adminApi.createTutorial(form)
+    }
     if (res.code === 0) {
-      ElMessage.success('创建成功')
+      ElMessage.success(isEdit.value ? '更新成功' : '创建成功')
       router.push('/admin/tutorials')
     } else {
-      ElMessage.error(res.message || '创建失败')
+      ElMessage.error(res.message || '操作失败')
     }
   } catch (e) {
-    ElMessage.error('创建失败')
+    ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
   } finally {
     submitLoading.value = false
   }
